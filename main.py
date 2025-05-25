@@ -3,6 +3,10 @@ import socket
 
 class SimpleHTTPServer:
     _socket = None
+    METHODS_ACCEPTED = [
+        "GET",
+        "POST",
+    ]
 
     def __init__(self, hostname="", port=8080) -> None:
         print("Initializing SimpleHTTPServer")
@@ -28,11 +32,23 @@ class SimpleHTTPServer:
         print("Server stopping")
 
     def read_handler(self, data):
+        s_data = data.decode("utf8")
         print(f"RX: {data}")
-        return data
+        lines = s_data.split("\n")
+        try:
+            start_line = lines[0].split(" ")
+        except TypeError:
+            print(f"Error trying to read: {lines[0]}")
+            return "HTTP/1.1 400 Bad Request\nGet out of here with that\n\n"
+        if start_line[0] not in self.METHODS_ACCEPTED:
+            return f"HTTP/1.1 405 Method not allowed\nI only support {self.METHODS_ACCEPTED}\n\n"
+
+        response_data = "HTTP/1.1 200 OK\nNot Sure what to do next"
+
+        return response_data
 
     def write_handler(self, conn, data):
-        conn.sendall(bytes(f"SERVER SAW: {data} \n".encode("utf8")))
+        conn.sendall(bytes(f"{data} \n".encode("utf8")))
         return
 
 
