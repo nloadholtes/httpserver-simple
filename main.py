@@ -14,15 +14,17 @@ class SimpleHTTPServer:
             print("must initialize class first!")
             return -1
         self._socket.listen(1)
-        conn, addr = self._socket.accept()
-        with conn:
-            print("Ready for connection")
-            while True:
-                data = conn.recv(1024)
-                if not data:
-                    break
-                response_data = self.read_handler(data)
-                self.write_handler(conn, response_data)
+        while True:
+            conn, addr = self._socket.accept()
+            with conn:
+                print("Ready for connection")
+                while True:
+                    data = conn.recv(1024)
+                    if not data:
+                        break
+                    response_data = self.read_handler(data)
+                    self.write_handler(conn, response_data)
+            print("Ending connection")
         print("Server stopping")
 
     def read_handler(self, data):
