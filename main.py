@@ -41,6 +41,8 @@ class SimpleHTTPServer:
             print(f"Error trying to read: {lines[0]}")
             return "HTTP/1.1 400 Bad Request\nGet out of here with that\n\n"
         if start_line[0] not in self.METHODS_ACCEPTED:
+            if len(start_line) < 3 or start_line[2] != "HTTP/1.1":
+                return "HTTP/1.1 400 Bad request"
             return f"HTTP/1.1 405 Method not allowed\nI only support {self.METHODS_ACCEPTED}\n\n"
 
         response_data = "HTTP/1.1 200 OK\nNot Sure what to do next"
