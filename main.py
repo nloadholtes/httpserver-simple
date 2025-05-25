@@ -7,6 +7,7 @@ class SimpleHTTPServer:
         "GET",
         "POST",
     ]
+    SUPPORTED_PROTOCOL = "HTTP/1.1"
 
     def __init__(self, hostname="", port=8080) -> None:
         print("Initializing SimpleHTTPServer")
@@ -22,12 +23,11 @@ class SimpleHTTPServer:
             conn, addr = self._socket.accept()
             with conn:
                 print("Ready for connection")
-                while True:
-                    data = conn.recv(1024)
-                    if not data:
-                        break
-                    response_data = self.read_handler(data)
-                    self.write_handler(conn, response_data)
+                data = conn.recv(1024)
+                if not data:
+                    break
+                response_data = self.read_handler(data)
+                self.write_handler(conn, response_data)
             print("Ending connection")
         print("Server stopping")
 
@@ -45,12 +45,22 @@ class SimpleHTTPServer:
                 return "HTTP/1.1 400 Bad request"
             return f"HTTP/1.1 405 Method not allowed\nI only support {self.METHODS_ACCEPTED}\n\n"
 
-        response_data = "HTTP/1.1 200 OK\nNot Sure what to do next"
+        response_data = self._basic_ok("Not Sure what to do next")
 
         return response_data
 
+    def _basic_ok(self, msg=None):
+        msg_len = len(msg) if msg else 0
+        return f"""{self.SUPPORTED_PROTOCOL} 200 OK\r
+Content-Length: {msg_len}\r
+Content-Type: text/html\r
+\r
+{msg}
+"""
+
     def write_handler(self, conn, data):
         conn.sendall(bytes(f"{data} \n".encode("utf8")))
+        conn.close()
         return
 
 
