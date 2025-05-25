@@ -21,10 +21,17 @@ class SimpleHTTPServer:
                 data = conn.recv(1024)
                 if not data:
                     break
-                # Print and echo
-                print(data)
-                conn.sendall(bytes(f"SERVER SAW: {data} \n".encode("utf8")))
+                response_data = self.read_handler(data)
+                self.write_handler(conn, response_data)
         print("Server stopping")
+
+    def read_handler(self, data):
+        print(f"RX: {data}")
+        return data
+
+    def write_handler(self, conn, data):
+        conn.sendall(bytes(f"SERVER SAW: {data} \n".encode("utf8")))
+        return
 
 
 def main():
