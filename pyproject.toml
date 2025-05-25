@@ -1,9 +1,10 @@
 [project]
 name = "httpserver-simple"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple HTTP server made just to make one"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "pdbpp>=0.11.6",
     "pytest>=8.3.5",
 ]
