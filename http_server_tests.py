@@ -85,33 +85,45 @@ def http_client():
 
 class TestBasicHTTPMethods:
     """Test basic HTTP methods"""
+    def _response_head_split(self, resp):
+        return resp.split("\r\n\r\n")[0].split(" ")
 
     def test_get_request(self, http_client):
         """Test basic GET request"""
         response = http_client.send_request("GET", "/")
-        assert response.startswith("HTTP/1.1")
+        resp_head = self._response_head_split(response)
+        assert resp_head[0] == "HTTP/1.1", resp_head[0]
+        assert resp_head[1] == "200", resp_head[1]
         assert "Content-Length:" in response or "Transfer-Encoding: chunked" in response
 
     def test_post_request(self, http_client):
         """Test POST request with body"""
         body = "test data"
         response = http_client.send_request("POST", "/", body=body)
-        assert response.startswith("HTTP/1.1")
+        resp_head = self._response_head_split(response)
+        assert resp_head[0] == "HTTP/1.1", resp_head[0]
+        assert resp_head[1] == "200", resp_head[1]
 
     def test_put_request(self, http_client):
         """Test PUT request"""
         response = http_client.send_request("PUT", "/test")
-        assert response.startswith("HTTP/1.1")
+        resp_head = self._response_head_split(response)
+        assert resp_head[0] == "HTTP/1.1", resp_head[0]
+        assert resp_head[1] == "200", resp_head[1]
 
     def test_delete_request(self, http_client):
         """Test DELETE request"""
         response = http_client.send_request("DELETE", "/test")
-        assert response.startswith("HTTP/1.1")
+        resp_head = self._response_head_split(response)
+        assert resp_head[0] == "HTTP/1.1", resp_head[0]
+        assert resp_head[1] == "200", resp_head[1]
 
     def test_head_request(self, http_client):
         """Test HEAD request (should have headers but no body)"""
         response = http_client.send_request("HEAD", "/")
-        assert response.startswith("HTTP/1.1")
+        resp_head = self._response_head_split(response)
+        assert resp_head[0] == "HTTP/1.1", resp_head[0]
+        assert resp_head[1] == "200", resp_head[1]
         # HEAD should not have a response body
         parts = response.split("\r\n\r\n", 1)
         if len(parts) > 1:
