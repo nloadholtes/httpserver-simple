@@ -142,14 +142,14 @@ class TestHTTPHeaders:
         """Test server handles custom headers"""
         headers = {"X-Custom-Header": "test-value", "User-Agent": "pytest-client/1.0"}
         response = http_client.send_request("GET", "/", headers=headers)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_content_type_header(self, http_client):
         """Test Content-Type header handling"""
         headers = {"Content-Type": "application/json"}
         body = '{"test": "data"}'
         response = http_client.send_request("POST", "/", headers=headers, body=body)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_multiple_header_values(self, http_client):
         """Test headers with multiple values"""
@@ -158,7 +158,7 @@ class TestHTTPHeaders:
             "Accept-Encoding": "gzip, deflate",
         }
         response = http_client.send_request("GET", "/", headers=headers)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
 
 class TestHTTPPaths:
@@ -167,22 +167,22 @@ class TestHTTPPaths:
     def test_root_path(self, http_client):
         """Test root path"""
         response = http_client.send_request("GET", "/")
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_nested_path(self, http_client):
         """Test nested paths"""
         response = http_client.send_request("GET", "/api/v1/users")
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_path_with_query_string(self, http_client):
         """Test path with query parameters"""
         response = http_client.send_request("GET", "/search?q=test&limit=10")
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_path_with_special_characters(self, http_client):
         """Test path with URL-encoded characters"""
         response = http_client.send_request("GET", "/test%20path")
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
 
 class TestHTTPVersions:
@@ -191,12 +191,12 @@ class TestHTTPVersions:
     def test_http_1_0_request(self, http_client):
         """Test HTTP/1.0 request"""
         response = http_client.send_request("GET", "/", http_version="1.0")
-        assert response.startswith("HTTP/")
+        verify_response_status_line(response)
 
     def test_http_1_1_request(self, http_client):
         """Test HTTP/1.1 request (default)"""
         response = http_client.send_request("GET", "/")
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
 
 class TestContentHandling:
@@ -205,27 +205,27 @@ class TestContentHandling:
     def test_empty_body(self, http_client):
         """Test request with empty body"""
         response = http_client.send_request("POST", "/", body="")
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_large_body(self, http_client):
         """Test request with larger body"""
         body = "x" * 10000  # 10KB of data
         response = http_client.send_request("POST", "/", body=body)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_json_content(self, http_client):
         """Test JSON content"""
         headers = {"Content-Type": "application/json"}
         body = '{"name": "test", "value": 42, "active": true}'
         response = http_client.send_request("POST", "/", headers=headers, body=body)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_form_data(self, http_client):
         """Test form-encoded data"""
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         body = "name=test&email=test%40example.com&age=25"
         response = http_client.send_request("POST", "/", headers=headers, body=body)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
 
 class TestHTTPResponseValidation:
@@ -308,7 +308,7 @@ class TestConnectionHandling:
         """Test Connection: close header"""
         headers = {"Connection": "close"}
         response = http_client.send_request("GET", "/", headers=headers)
-        assert response.startswith("HTTP/1.1")
+        verify_response_status_line(response)
 
     def test_keep_alive(self, http_client):
         """Test persistent connections (HTTP/1.1 default)"""
@@ -380,7 +380,7 @@ class TestConcurrency:
         # Check all requests succeeded
         assert len(results) == 5
         for result in results:
-            assert result.startswith("HTTP/1.1")
+            verify_response_status_line(result)
 
 
 # Configuration for pytest
