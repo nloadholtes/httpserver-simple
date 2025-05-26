@@ -3,16 +3,37 @@ import socket
 
 class SimpleHTTPServer:
     _socket = None
-    METHODS_ACCEPTED = [
-        "GET",
-        "POST",
-    ]
+    METHODS_MAP = {}
     SUPPORTED_PROTOCOL = "HTTP/1.1"
 
     def __init__(self, hostname="", port=8080) -> None:
         print("Initializing SimpleHTTPServer")
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.bind((hostname, port))
+        self.METHODS_MAP = {
+            "GET": self.get_handler,
+            "POST": self.post_handler,
+            "PUT": self.put_handler,
+            "DELETE": self.delete_handler,
+            "HEAD": self.head_handler,
+        }
+
+    def get_handler(self, *args, **kwargs):
+        return self._basic_ok("You called GET, Not Sure what to do next")
+
+    def post_handler(self, *args, **kwargs):
+        return self._basic_ok("You called POST, Not Sure what to do next")
+
+    def put_handler(self, *args, **kwargs):
+        return self._basic_ok("You called PUT, Not Sure what to do next", "201 Created")
+
+    def delete_handler(self, *args, **kwargs):
+        return self._basic_ok(
+            "You called DELETE, Not Sure what to do next", "204 No Content"
+        )
+
+    def head_handler(self, *args, **kwargs):
+        return self._basic_ok("")
 
     def serve(self):
         if self._socket is None:
@@ -40,18 +61,29 @@ class SimpleHTTPServer:
         except TypeError:
             print(f"Error trying to read: {lines[0]}")
             return "HTTP/1.1 400 Bad Request\nGet out of here with that\n\n"
-        if start_line[0] not in self.METHODS_ACCEPTED:
+        if start_line[0] not in self.METHODS_MAP:
             if len(start_line) < 3 or start_line[2] != "HTTP/1.1":
                 return "HTTP/1.1 400 Bad request"
-            return f"HTTP/1.1 405 Method not allowed\nI only support {self.METHODS_ACCEPTED}\n\n"
+            return f"HTTP/1.1 405 Method not allowed\nI only support {self.METHODS_MAP}\n\n"
 
-        response_data = self._basic_ok("Not Sure what to do next")
-
+        response_data = self.METHODS_MAP[start_line[0]](start_line, lines)
+        if not response_data:
+            print("No response data, returning basic OK")
+            response_data = self._basic_error("Uhhh, something didn't work", 500)
         return response_data
 
-    def _basic_ok(self, msg=None):
+    def _basic_ok(self, msg=None, response_code="200 Ok"):
         msg_len = len(msg) if msg else 0
-        return f"""{self.SUPPORTED_PROTOCOL} 200 OK\r
+        return f"""{self.SUPPORTED_PROTOCOL} {response_code}\r
+Content-Length: {msg_len}\r
+Content-Type: text/html\r
+\r
+{msg}
+"""
+
+    def _basic_error(self, msg=None, error_code="400 Whoops"):
+        msg_len = len(msg) if msg else 0
+        return f"""{self.SUPPORTED_PROTOCOL} {error_code}\r
 Content-Length: {msg_len}\r
 Content-Type: text/html\r
 \r

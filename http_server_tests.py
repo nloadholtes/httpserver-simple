@@ -83,20 +83,26 @@ def http_client():
     return HTTPClient()
 
 
-def verify_response_status_line(response, expected_status="200", expected_protocol="HTTP/1.1"):
+def verify_response_status_line(
+    response, expected_status="200", expected_protocol="HTTP/1.1"
+):
     """Parse HTTP response status line and verify it meets expectations.
-    
+
     Args:
         response (str): Full HTTP response string
         expected_status (str): Expected status code (default: "200")
         expected_protocol (str): Expected protocol version (default: "HTTP/1.1")
-        
+
     Returns:
         list: Components of status line [protocol, status_code, status_message]
     """
     status_parts = response.split("\r\n\r\n")[0].split(" ")
-    assert status_parts[0] == expected_protocol, f"Expected {expected_protocol}, got {status_parts[0]}"
-    assert status_parts[1] == expected_status, f"Expected status {expected_status}, got {status_parts[1]}"
+    assert (
+        status_parts[0] == expected_protocol
+    ), f"Expected {expected_protocol}, got {status_parts[0]}"
+    assert (
+        status_parts[1] == expected_status
+    ), f"Expected status {expected_status}, got {status_parts[1]}"
     return status_parts
 
 
@@ -118,13 +124,13 @@ class TestBasicHTTPMethods:
     def test_put_request(self, http_client):
         """Test PUT request"""
         response = http_client.send_request("PUT", "/test")
-        verify_response_status_line(response)
+        verify_response_status_line(response, "201")
 
     def test_delete_request(self, http_client):
         """Test DELETE request"""
         response = http_client.send_request("DELETE", "/test")
-        verify_response_status_line(response)
-        
+        verify_response_status_line(response, "204")
+
     def test_head_request(self, http_client):
         """Test HEAD request (should have headers but no body)"""
         response = http_client.send_request("HEAD", "/")
