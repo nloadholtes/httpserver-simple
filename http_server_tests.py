@@ -83,47 +83,52 @@ def http_client():
     return HTTPClient()
 
 
+def verify_response_status_line(response, expected_status="200", expected_protocol="HTTP/1.1"):
+    """Parse HTTP response status line and verify it meets expectations.
+    
+    Args:
+        response (str): Full HTTP response string
+        expected_status (str): Expected status code (default: "200")
+        expected_protocol (str): Expected protocol version (default: "HTTP/1.1")
+        
+    Returns:
+        list: Components of status line [protocol, status_code, status_message]
+    """
+    status_parts = response.split("\r\n\r\n")[0].split(" ")
+    assert status_parts[0] == expected_protocol, f"Expected {expected_protocol}, got {status_parts[0]}"
+    assert status_parts[1] == expected_status, f"Expected status {expected_status}, got {status_parts[1]}"
+    return status_parts
+
+
 class TestBasicHTTPMethods:
     """Test basic HTTP methods"""
-    def _response_head_split(self, resp):
-        return resp.split("\r\n\r\n")[0].split(" ")
 
     def test_get_request(self, http_client):
         """Test basic GET request"""
         response = http_client.send_request("GET", "/")
-        resp_head = self._response_head_split(response)
-        assert resp_head[0] == "HTTP/1.1", resp_head[0]
-        assert resp_head[1] == "200", resp_head[1]
+        verify_response_status_line(response)
         assert "Content-Length:" in response or "Transfer-Encoding: chunked" in response
 
     def test_post_request(self, http_client):
         """Test POST request with body"""
         body = "test data"
         response = http_client.send_request("POST", "/", body=body)
-        resp_head = self._response_head_split(response)
-        assert resp_head[0] == "HTTP/1.1", resp_head[0]
-        assert resp_head[1] == "200", resp_head[1]
+        verify_response_status_line(response)
 
     def test_put_request(self, http_client):
         """Test PUT request"""
         response = http_client.send_request("PUT", "/test")
-        resp_head = self._response_head_split(response)
-        assert resp_head[0] == "HTTP/1.1", resp_head[0]
-        assert resp_head[1] == "200", resp_head[1]
+        verify_response_status_line(response)
 
     def test_delete_request(self, http_client):
         """Test DELETE request"""
         response = http_client.send_request("DELETE", "/test")
-        resp_head = self._response_head_split(response)
-        assert resp_head[0] == "HTTP/1.1", resp_head[0]
-        assert resp_head[1] == "200", resp_head[1]
-
+        verify_response_status_line(response)
+        
     def test_head_request(self, http_client):
         """Test HEAD request (should have headers but no body)"""
         response = http_client.send_request("HEAD", "/")
-        resp_head = self._response_head_split(response)
-        assert resp_head[0] == "HTTP/1.1", resp_head[0]
-        assert resp_head[1] == "200", resp_head[1]
+        verify_response_status_line(response)
         # HEAD should not have a response body
         parts = response.split("\r\n\r\n", 1)
         if len(parts) > 1:
