@@ -69,7 +69,9 @@ class SimpleHTTPServer:
         response_data = self.METHODS_MAP[start_line[0]](start_line, lines)
         if not response_data:
             print("No response data, returning basic OK")
-            response_data = self._basic_error("Uhhh, something didn't work", 500)
+            response_data = self._basic_error(
+                "Uhhh, something didn't work", "500 Internal Server Error"
+            )
         return response_data
 
     def _basic_ok(self, msg=None, response_code="200 Ok"):
